@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
 
-public class PlayerController : MonoBehaviourPun, IPunObservable
+public class PlayerController : MonoBehaviourPun
 {
     public float playerSpeed = 5f;
 
@@ -46,42 +46,38 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
             Shooting();
         }
-
         /*if (Input.GetMouseButtonDown(0))
             HealthManager(-10f);
         */
-
-    }
-
-    void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(transform.position);
-            stream.SendNext(transform.rotation);
-            stream.SendNext(rigidBody2D.velocity);
-        }
-        else
-        {
-            //Para tratamento de lag
-            transform.position = Vector3.Lerp(transform.position, (Vector3)stream.ReceiveNext(), Mathf.Abs((float)(PhotonNetwork.Time - info.timestamp)));
-            
-            //Sem tratamento
-            transform.rotation = (Quaternion) stream.ReceiveNext();
-            rigidBody2D.velocity = (Vector2)stream.ReceiveNext();
-        }
     }
 
     void Shooting()
     {
         if(Input.GetMouseButtonDown(0))
         {
-            Instantiate(bulletGO, spawnBullet.transform.position, spawnBullet.transform.rotation);
+            photonView.RPC("Shoot", RpcTarget.All);
         }
-        if(Input.GetMouseButtonDown(1))
+        /*if(Input.GetMouseButtonDown(1))
         {
             PhotonNetwork.Instantiate(bulletGOPhotonView.name, spawnBullet.transform.position, spawnBullet.transform.rotation, 0);
-        }
+        }*/
+    }
+    
+    [PunRPC] //Função pode ser vista na rede e consome menos recursos
+    void Shoot()
+    {
+        Instantiate(bulletGO, spawnBullet.transform.position, spawnBullet.transform.rotation);
+    }
+
+    public void TakeDamage(float value)
+    {
+        photonView.RPC("TakeDamageNetwork", RpcTarget.AllBuffered, value);
+    }
+
+    [PunRPC]
+    void TakeDamageNetwork(float value)
+    {
+        HealthManager(value);
     }
 
     void HealthManager(float value)
@@ -107,7 +103,6 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         Vector2 direction = new Vector2(
                                 mousePosition.x - transform.position.x,
                                 mousePosition.y - transform.position.y);
-
         transform.up = direction;
     }
 }
