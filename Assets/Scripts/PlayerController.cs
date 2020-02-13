@@ -55,7 +55,8 @@ public class PlayerController : MonoBehaviourPun
     {
         if(Input.GetMouseButtonDown(0))
         {
-            photonView.RPC("Shoot", RpcTarget.All);
+            //photonView.RPC("Shoot", RpcTarget.All);
+            PhotonNetwork.Instantiate(bulletGO.name, spawnBullet.transform.position, spawnBullet.transform.rotation, 0);
         }
         /*if(Input.GetMouseButtonDown(1))
         {

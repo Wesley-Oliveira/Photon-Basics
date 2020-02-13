@@ -27,12 +27,22 @@ public class BulletController : MonoBehaviour
         bulletTimeCount += Time.deltaTime;
 	}
 
+    [PunRPC]
+    void BulletDestroy()
+    {
+        Destroy(this.gameObject);
+    }
+
     private void OnTriggerEnter2D(Collider2D collider)
     {
         if(collider.CompareTag("Player") && collider.GetComponent<PlayerController>() && collider.GetComponent<PhotonView>().IsMine)
         {
-            Debug.Log("PlayerId: " + collider.GetComponent<PhotonView>().Owner.ActorNumber + " PlayerName: " + collider.GetComponent<PhotonView>().Owner.NickName)
+            Debug.Log("PlayerId: " + collider.GetComponent<PhotonView>().Owner.ActorNumber + " PlayerName: " + collider.GetComponent<PhotonView>().Owner.NickName);
             collider.GetComponent<PlayerController>().TakeDamage(-bulletDamage);
+
+            this.GetComponent<PhotonView>().RPC("BulletDestroy", RpcTarget.AllViaServer);
         }
+
+        Destroy(this.gameObject);
     }
 }

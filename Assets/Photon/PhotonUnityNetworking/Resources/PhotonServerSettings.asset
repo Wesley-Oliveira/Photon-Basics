@@ -35,5 +35,6 @@ MonoBehaviour:
   - RespawnSpaceship
   - Shoot
   - TakeDamageNetwork
+  - BulletDestroy
   DisableAutoOpenWizard: 1
   ShowSettings: 1
