@@ -163,6 +163,19 @@ public class NetworkController : MonoBehaviourPunCallbacks
             Debug.Log("GameMode: " + typeGameValue.ToString());
         }
 
+        foreach (var item in PhotonNetwork.PlayerList)
+        {
+            //Debug.Log("Name: " + item.NickName);
+            //Debug.Log("IsMaster: " + item.IsMasterClient);
+
+            Hashtable playerCustom = new Hashtable();
+            playerCustom.Add("Lives", 3);
+            playerCustom.Add("Score", 0);
+
+            item.SetCustomProperties(playerCustom, null, null);
+            item.SetScore(0); //Para usar o sistema de score da própria photon
+        }
+
         //Para instanciar um objeto multiplayer
         PhotonNetwork.Instantiate(myPlayer.name, myPlayer.transform.position, myPlayer.transform.rotation, 0);
     }

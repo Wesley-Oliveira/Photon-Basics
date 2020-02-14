@@ -38,7 +38,7 @@ public class BulletController : MonoBehaviour
         if(collider.CompareTag("Player") && collider.GetComponent<PlayerController>() && collider.GetComponent<PhotonView>().IsMine)
         {
             Debug.Log("PlayerId: " + collider.GetComponent<PhotonView>().Owner.ActorNumber + " PlayerName: " + collider.GetComponent<PhotonView>().Owner.NickName);
-            collider.GetComponent<PlayerController>().TakeDamage(-bulletDamage);
+            collider.GetComponent<PlayerController>().TakeDamage(-bulletDamage, GetComponent<PhotonView>().Owner);
 
             this.GetComponent<PhotonView>().RPC("BulletDestroy", RpcTarget.AllViaServer);
         }

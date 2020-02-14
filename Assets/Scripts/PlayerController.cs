@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
+using Photon.Pun.UtilityScripts; //Para usar o sistema de score da própria photon
 using Photon.Realtime;
 
 public class PlayerController : MonoBehaviourPun
@@ -70,15 +71,54 @@ public class PlayerController : MonoBehaviourPun
         Instantiate(bulletGO, spawnBullet.transform.position, spawnBullet.transform.rotation);
     }
 
-    public void TakeDamage(float value)
+    public void TakeDamage(float value, Player playerTemp)
     {
-        photonView.RPC("TakeDamageNetwork", RpcTarget.AllBuffered, value);
+        photonView.RPC("TakeDamageNetwork", RpcTarget.AllBuffered, value, playerTemp);
     }
 
     [PunRPC]
-    void TakeDamageNetwork(float value)
+    void TakeDamageNetwork(float value, Player playerTemp)
     {
+        Debug.Log("TakeDamageNetwork");
         HealthManager(value);
+
+        object playerScoreTempGet;
+        playerTemp.CustomProperties.TryGetValue("Score", out playerScoreTempGet);
+
+        int soma = (int)playerScoreTempGet;
+        soma += 10;
+
+        ExitGames.Client.Photon.Hashtable playerHashtableTemp = new ExitGames.Client.Photon.Hashtable();
+        playerHashtableTemp.Add("Score", soma);
+
+        playerTemp.SetCustomProperties(playerHashtableTemp, null, null);
+
+        playerTemp.AddScore(10); //Para usar o sistema de score da própria photon
+
+
+        if (playerHealthCurrent <= 0 && photonView.IsMine)
+        {
+            photonView.RPC("IsGameOver", RpcTarget.MasterClient);
+        }    
+    }
+
+    [PunRPC]
+    void IsGameOver()
+    {
+        if (photonView.Owner.IsMasterClient)
+        {
+            Debug.Log("GameOver");
+
+            foreach (var item in PhotonNetwork.PlayerList)
+            {
+                object playerScoreTempGet;
+                item.CustomProperties.TryGetValue("Score", out playerScoreTempGet);
+
+                Debug.Log("PlayerName: " + item.NickName);
+                Debug.Log("ScoreNaMão: " + playerScoreTempGet.ToString());
+                Debug.Log("Score via Photon: " + item.GetScore());
+            }
+        }
     }
 
     void HealthManager(float value)
